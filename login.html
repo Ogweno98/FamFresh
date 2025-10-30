@@ -33,7 +33,7 @@
       apiKey: "AIzaSyCswU-LrTo6nOe_JkmepizOHwWyZxbteCc",
       authDomain: "famfresh-ea11f.firebaseapp.com",
       projectId: "famfresh-ea11f",
-      storageBucket: "famfresh-ea11f.firebasestorage.app",
+      storageBucket: "famfresh-ea11f.appspot.com",
       messagingSenderId: "713550151605",
       appId: "1:713550151605:web:48641c0ed46771542223fc",
       measurementId: "G-TW5GD58FYC"
@@ -44,54 +44,46 @@
 
   <!-- Login Logic -->
   <script>
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
+    const loginForm = document.getElementById('loginForm');
+    const loginMsg = document.getElementById('loginMsg');
+
+    // Only redirect if form successfully logs in
+    loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
-      const msg = document.getElementById('loginMsg');
 
-      auth.signInWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-          msg.textContent = '';
-          window.location.href = 'buyer-dashboard.html'; // success → dashboard
-        })
-        .catch((error) => {
-          msg.textContent = error.message; // show Firebase error
-        });
+      loginMsg.style.color = 'black';
+      loginMsg.textContent = 'Logging in...';
+
+      try {
+        const userCredential = await auth.signInWithEmailAndPassword(email, password);
+        loginMsg.textContent = '';
+        // Redirect based on user role from Firestore
+        const user = userCredential.user;
+        const doc = await firebase.firestore().collection('users').doc(user.uid).get();
+        if (doc.exists) {
+          const role = doc.data().role;
+          if (role === 'farmer') window.location.href = 'farmer-dashboard.html';
+          else if (role === 'admin') window.location.href = 'admin-dashboard.html';
+          else window.location.href = 'buyer-dashboard.html';
+        } else {
+          // default redirect
+          window.location.href = 'buyer-dashboard.html';
+        }
+      } catch (err) {
+        loginMsg.style.color = 'red';
+        loginMsg.textContent = err.message;
+      }
     });
 
-    // Redirect already logged-in users directly to dashboard
+    // Optional: redirect already logged-in users only if visiting login page
     auth.onAuthStateChanged(user => {
       if (user) {
-        window.location.href = 'buyer-dashboard.html';
+        // do nothing; user must explicitly log in to redirect
       }
     });
   </script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="firebase-init.js"></script>
-<script src="auth.js"></script>
-<script>
-document.getElementById('loginForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value;
-  const msg = document.getElementById('loginMsg');
-
-  const res = await appAuth.login(email, password);
-
-  if (res.success) {
-    msg.textContent = '';
-    // Redirect based on role
-    if (res.role === 'farmer') window.location.href = 'farmer-dashboard.html';
-    else if (res.role === 'admin') window.location.href = 'admin-dashboard.html';
-    else window.location.href = 'buyer-dashboard.html';
-  } else {
-    msg.textContent = res.message;
-  }
-});
-</script>
-
 </body>
 </html>
+
