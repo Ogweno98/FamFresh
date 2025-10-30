@@ -1,13 +1,19 @@
 // firebase-init.js
-// Replace the placeholders with your Firebase project config
-const FIREBASE_CONFIG = {
-  apiKey: "YOUR_FIREBASE_API_KEY",
-  authDomain: "YOUR_FIREBASE_APP.firebaseapp.com",
-  projectId: "YOUR_FIREBASE_APP",
-  storageBucket: "YOUR_FIREBASE_APP.appspot.com",
-  messagingSenderId: "SENDER_ID",
-  appId: "APP_ID"
+// Your Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyCswU-LrTo6nOe_JkmepizOHwWyZxbteCc",
+  authDomain: "famfresh-ea11f.firebaseapp.com",
+  projectId: "famfresh-ea11f",
+  storageBucket: "famfresh-ea11f.firebasestorage.app",
+  messagingSenderId: "713550151605",
+  appId: "1:713550151605:web:48641c0ed46771542223fc",
+  measurementId: "G-TW5GD58FYC"
 };
 
-// Initialize if not already
-if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+
+// Firebase services
+const auth = firebase.auth();
+const db = firebase.firestore();
+const storage = firebase.storage();
