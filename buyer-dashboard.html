@@ -39,5 +39,10 @@
     document.getElementById('refreshWeather').addEventListener('click', async (e) => { e.preventDefault(); const reply = await appChat.fetchLocalWeatherAndTips(); appChat.addMessage('bot', reply); document.querySelector('.chat-window')?.classList.remove('hidden'); });
     document.getElementById('logoutBtn')?.addEventListener('click', ()=>{ appAuth.logout(); location.href='index.html'; });
   </script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="firebase-init.js"></script>
+<script src="auth.js"></script>
+
 </body>
 </html>
