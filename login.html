@@ -7,6 +7,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-green-50 min-h-screen flex items-center justify-center">
+
   <div class="max-w-md w-full bg-white p-6 rounded-xl shadow">
     <h2 class="font-bold text-2xl text-green-800">Login</h2>
     <form id="loginForm" class="mt-4 space-y-3">
@@ -26,64 +27,35 @@
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-  <!-- Initialize Firebase -->
+  <!-- Initialize Firebase and Auth -->
+  <script src="firebase-init.js"></script>
+  <script src="auth.js"></script>
+
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCswU-LrTo6nOe_JkmepizOHwWyZxbteCc",
-      authDomain: "famfresh-ea11f.firebaseapp.com",
-      projectId: "famfresh-ea11f",
-      storageBucket: "famfresh-ea11f.appspot.com",
-      messagingSenderId: "713550151605",
-      appId: "1:713550151605:web:48641c0ed46771542223fc",
-      measurementId: "G-TW5GD58FYC"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-  </script>
-
-  <!-- Login Logic -->
-  <script>
-    const loginForm = document.getElementById('loginForm');
-    const loginMsg = document.getElementById('loginMsg');
-
-    // Only redirect if form successfully logs in
-    loginForm.addEventListener('submit', async (e) => {
+    // Login logic using appAuth
+    document.getElementById('loginForm').addEventListener('submit', async e => {
       e.preventDefault();
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
+      const msg = document.getElementById('loginMsg');
 
-      loginMsg.style.color = 'black';
-      loginMsg.textContent = 'Logging in...';
+      msg.style.color = 'black';
+      msg.textContent = 'Logging in...';
 
-      try {
-        const userCredential = await auth.signInWithEmailAndPassword(email, password);
-        loginMsg.textContent = '';
-        // Redirect based on user role from Firestore
-        const user = userCredential.user;
-        const doc = await firebase.firestore().collection('users').doc(user.uid).get();
-        if (doc.exists) {
-          const role = doc.data().role;
-          if (role === 'farmer') window.location.href = 'farmer-dashboard.html';
-          else if (role === 'admin') window.location.href = 'admin-dashboard.html';
-          else window.location.href = 'buyer-dashboard.html';
-        } else {
-          // default redirect
-          window.location.href = 'buyer-dashboard.html';
-        }
-      } catch (err) {
-        loginMsg.style.color = 'red';
-        loginMsg.textContent = err.message;
-      }
-    });
-
-    // Optional: redirect already logged-in users only if visiting login page
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        // do nothing; user must explicitly log in to redirect
+      const res = await appAuth.login(email, password);
+      if(res.success){
+        msg.textContent = '';
+        if(res.role === 'farmer') window.location.href = 'farmer-dashboard.html';
+        else if(res.role === 'admin') window.location.href = 'admin-dashboard.html';
+        else window.location.href = 'buyer-dashboard.html';
+      } else {
+        msg.style.color = 'red';
+        msg.textContent = res.message;
       }
     });
   </script>
+
 </body>
 </html>
-
