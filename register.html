@@ -1,6 +1,11 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Register — FamFresh</title><script src="https://cdn.tailwindcss.com"></script></head>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Register — FamFresh</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
 <body class="bg-green-50 min-h-screen flex items-center justify-center">
   <div class="max-w-md w-full bg-white p-6 rounded-xl shadow">
     <h2 class="font-bold text-2xl text-green-800">Create an account</h2>
@@ -8,27 +13,93 @@
       <input id="name" required placeholder="Full name" class="w-full border px-3 py-2 rounded"/>
       <input id="regEmail" type="email" required placeholder="Email" class="w-full border px-3 py-2 rounded"/>
       <input id="regPassword" type="password" required placeholder="Password" class="w-full border px-3 py-2 rounded"/>
-      <select id="role" class="w-full border px-3 py-2 rounded"><option value="buyer">Buyer</option><option value="farmer">Farmer</option></select>
+      <select id="role" class="w-full border px-3 py-2 rounded">
+        <option value="buyer">Buyer</option>
+        <option value="farmer">Farmer</option>
+      </select>
       <button class="w-full bg-green-700 text-white py-2 rounded">Register</button>
       <p id="registerMsg" class="text-sm text-red-600 mt-2"></p>
     </form>
   </div>
 
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="firebase-init.js"></script>
-  <script src="app.js"></script>
+
+  <!-- Initialize Firebase -->
   <script>
-    document.getElementById('registerForm').addEventListener('submit', async function(e){
+    const firebaseConfig = {
+      apiKey: "AIzaSyCswU-LrTo6nOe_JkmepizOHwWyZxbteCc",
+      authDomain: "famfresh-ea11f.firebaseapp.com",
+      projectId: "famfresh-ea11f",
+      storageBucket: "famfresh-ea11f.firebasestorage.app",
+      messagingSenderId: "713550151605",
+      appId: "1:713550151605:web:48641c0ed46771542223fc",
+      measurementId: "G-TW5GD58FYC"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+  </script>
+
+  <!-- Registration Logic -->
+  <script>
+    document.getElementById('registerForm').addEventListener('submit', async function(e) {
       e.preventDefault();
+
       const name = document.getElementById('name').value.trim();
       const email = document.getElementById('regEmail').value.trim();
-      const pass = document.getElementById('regPassword').value;
+      const password = document.getElementById('regPassword').value;
       const role = document.getElementById('role').value;
-      const res = await appAuth.register({name, email, password: pass, role});
       const msg = document.getElementById('registerMsg');
-      if(res.success){ msg.style.color = 'green'; msg.textContent = 'Registered! Redirecting...'; setTimeout(()=> { if(role === 'farmer') location.href = 'farmer-dashboard.html'; else location.href = 'buyer-dashboard.html'; }, 800); } else { msg.textContent = res.message; }
+
+      msg.style.color = 'black';
+      msg.textContent = 'Creating your account...';
+
+      try {
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+
+        // Save extra user data to Firestore
+        await db.collection('users').doc(user.uid).set({
+          name: name,
+          email: email,
+          role: role,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        msg.style.color = 'green';
+        msg.textContent = 'Account created successfully! Redirecting...';
+
+        setTimeout(() => {
+          if (role === 'farmer') {
+            window.location.href = 'farmer-dashboard.html';
+          } else {
+            window.location.href = 'buyer-dashboard.html';
+          }
+        }, 1000);
+
+      } catch (error) {
+        msg.style.color = 'red';
+        msg.textContent = error.message;
+      }
+    });
+
+    // Redirect logged-in users directly to their dashboard
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        db.collection('users').doc(user.uid).get().then(doc => {
+          if (doc.exists) {
+            const role = doc.data().role;
+            if (role === 'farmer') {
+              window.location.href = 'farmer-dashboard.html';
+            } else {
+              window.location.href = 'buyer-dashboard.html';
+            }
+          }
+        });
+      }
     });
   </script>
 </body>
