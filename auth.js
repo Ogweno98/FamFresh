@@ -14,13 +14,13 @@ if (!firebase.apps.length) {
 const db = firebase.firestore();
 
 const appAuth = {
+  // Register new user
   async register({ name, email, password, role }) {
     try {
-      // Create user with email/password
       const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
       const user = userCredential.user;
 
-      // Save extra info in Firestore
+      // Save extra info to Firestore
       await db.collection('users').doc(user.uid).set({
         name,
         email,
@@ -34,14 +34,15 @@ const appAuth = {
     }
   },
 
+  // Login existing user
   async login(email, password) {
     try {
       const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
       const user = userCredential.user;
 
-      // Optional: fetch role to redirect correctly
+      // Get user role from Firestore
       const doc = await db.collection('users').doc(user.uid).get();
-      const role = doc.data()?.role || 'buyer';
+      const role = doc.exists ? doc.data().role : 'buyer';
 
       return { success: true, role };
     } catch (error) {
@@ -49,16 +50,31 @@ const appAuth = {
     }
   },
 
+  // Logout
   logout() {
     return firebase.auth().signOut();
   }
 };
 
-// Auth guard for dashboards
+// ---------------------------
+// Dashboard auth guard
+// ---------------------------
 firebase.auth().onAuthStateChanged(async (user) => {
   const page = window.location.pathname.split("/").pop();
 
-  if (!user && page.includes('dashboard')) {
+  // If user is on a dashboard page and not logged in → redirect to login
+  if (page.includes('dashboard') && !user) {
     window.location.href = 'login.html';
+  }
+
+  // Optional: if user is logged in and visits login/register page → do not redirect
+  // You can also redirect logged-in users visiting login/register page:
+  if ((page === 'login.html' || page === 'register.html') && user) {
+    const doc = await db.collection('users').doc(user.uid).get();
+    const role = doc.exists ? doc.data().role : 'buyer';
+
+    if (role === 'farmer') window.location.href = 'farmer-dashboard.html';
+    else if (role === 'admin') window.location.href = 'admin-dashboard.html';
+    else window.location.href = 'buyer-dashboard.html';
   }
 });
