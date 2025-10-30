@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Login — FamFresh</title><script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-green-50 min-h-screen flex items-center justify-center">
+  <div class="max-w-md w-full bg-white p-6 rounded-xl shadow">
+    <h2 class="font-bold text-2xl text-green-800">Login</h2>
+    <form id="loginForm" class="mt-4 space-y-3">
+      <input id="email" type="email" required placeholder="Email" class="w-full border px-3 py-2 rounded"/>
+      <input id="password" type="password" required placeholder="Password" class="w-full border px-3 py-2 rounded"/>
+      <div class="flex items-center justify-between">
+        <label class="text-sm"><input id="remember" type="checkbox" class="mr-2"> Remember me</label>
+        <a href="register.html" class="text-sm text-green-600">Create account</a>
+      </div>
+      <button class="w-full bg-green-700 text-white py-2 rounded">Login</button>
+      <p id="loginMsg" class="text-sm text-red-600 mt-2"></p>
+    </form>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-init.js"></script>
+  <script src="app.js"></script>
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async function(e){
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const res = await appAuth.login(email, password);
+      const msg = document.getElementById('loginMsg');
+      if(res.success){ msg.textContent=''; window.location.href = 'buyer-dashboard.html'; } else { msg.textContent = res.message; }
+    });
+  </script>
+</body>
+</html>
