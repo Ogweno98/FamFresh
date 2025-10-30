@@ -106,6 +106,27 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="firebase-init.js"></script>
 <script src="auth.js"></script>
+<script>
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const msg = document.getElementById('loginMsg');
+
+  const res = await appAuth.login(email, password);
+
+  if (res.success) {
+    msg.textContent = '';
+    // Redirect based on role
+    if (res.role === 'farmer') window.location.href = 'farmer-dashboard.html';
+    else if (res.role === 'admin') window.location.href = 'admin-dashboard.html';
+    else window.location.href = 'buyer-dashboard.html';
+  } else {
+    msg.textContent = res.message;
+  }
+});
+</script>
 
 </body>
 </html>
