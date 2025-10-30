@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Register — FamFresh</title><script src="https://cdn.tailwindcss.com"></script></head>
+<body class="bg-green-50 min-h-screen flex items-center justify-center">
+  <div class="max-w-md w-full bg-white p-6 rounded-xl shadow">
+    <h2 class="font-bold text-2xl text-green-800">Create an account</h2>
+    <form id="registerForm" class="mt-4 space-y-3">
+      <input id="name" required placeholder="Full name" class="w-full border px-3 py-2 rounded"/>
+      <input id="regEmail" type="email" required placeholder="Email" class="w-full border px-3 py-2 rounded"/>
+      <input id="regPassword" type="password" required placeholder="Password" class="w-full border px-3 py-2 rounded"/>
+      <select id="role" class="w-full border px-3 py-2 rounded"><option value="buyer">Buyer</option><option value="farmer">Farmer</option></select>
+      <button class="w-full bg-green-700 text-white py-2 rounded">Register</button>
+      <p id="registerMsg" class="text-sm text-red-600 mt-2"></p>
+    </form>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-init.js"></script>
+  <script src="app.js"></script>
+  <script>
+    document.getElementById('registerForm').addEventListener('submit', async function(e){
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const pass = document.getElementById('regPassword').value;
+      const role = document.getElementById('role').value;
+      const res = await appAuth.register({name, email, password: pass, role});
+      const msg = document.getElementById('registerMsg');
+      if(res.success){ msg.style.color = 'green'; msg.textContent = 'Registered! Redirecting...'; setTimeout(()=> { if(role === 'farmer') location.href = 'farmer-dashboard.html'; else location.href = 'buyer-dashboard.html'; }, 800); } else { msg.textContent = res.message; }
+    });
+  </script>
+</body>
+</html>
