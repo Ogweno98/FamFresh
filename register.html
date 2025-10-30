@@ -7,20 +7,21 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-green-50 min-h-screen flex items-center justify-center">
+
   <div class="max-w-md w-full bg-white p-6 rounded-xl shadow">
     <h2 class="font-bold text-2xl text-green-800">Create an account</h2>
     <form id="registerForm" class="mt-4 space-y-3">
       <input id="name" required placeholder="Full name" class="w-full border px-3 py-2 rounded"/>
-      <input id="regEmail" type="email" required placeholder="Email" class="w-full border px-3 py-2 rounded"/>
-      <input id="regPassword" type="password" required placeholder="Password" class="w-full border px-3 py-2 rounded"/>
+      <input id="email" type="email" required placeholder="Email" class="w-full border px-3 py-2 rounded"/>
+      <input id="password" type="password" required placeholder="Password" class="w-full border px-3 py-2 rounded"/>
       <select id="role" class="w-full border px-3 py-2 rounded">
         <option value="buyer">Buyer</option>
         <option value="farmer">Farmer</option>
       </select>
       <button class="w-full bg-green-700 text-white py-2 rounded">Register</button>
       <p id="registerMsg" class="text-sm text-red-600 mt-2"></p>
-      <p class="text-sm text-gray-600 mt-2">Already have an account? <a href="login.html" class="text-green-600 underline">Login</a></p>
     </form>
+    <p class="text-sm mt-2">Already have an account? <a href="login.html" class="text-green-600">Login</a></p>
   </div>
 
   <!-- Firebase SDKs -->
@@ -28,64 +29,38 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-  <!-- Initialize Firebase -->
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCswU-LrTo6nOe_JkmepizOHwWyZxbteCc",
-      authDomain: "famfresh-ea11f.firebaseapp.com",
-      projectId: "famfresh-ea11f",
-      storageBucket: "famfresh-ea11f.appspot.com",
-      messagingSenderId: "713550151605",
-      appId: "1:713550151605:web:48641c0ed46771542223fc",
-      measurementId: "G-TW5GD58FYC"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-  </script>
+  <!-- Initialize Firebase and Auth -->
+  <script src="firebase-init.js"></script>
+  <script src="auth.js"></script>
 
-  <!-- Registration Logic -->
   <script>
-    const registerForm = document.getElementById('registerForm');
-    const registerMsg = document.getElementById('registerMsg');
-
-    registerForm.addEventListener('submit', async (e) => {
+    // Registration logic using appAuth
+    document.getElementById('registerForm').addEventListener('submit', async e => {
       e.preventDefault();
+
       const name = document.getElementById('name').value.trim();
-      const email = document.getElementById('regEmail').value.trim();
-      const password = document.getElementById('regPassword').value;
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
       const role = document.getElementById('role').value;
+      const msg = document.getElementById('registerMsg');
 
-      registerMsg.style.color = 'black';
-      registerMsg.textContent = 'Creating your account...';
+      msg.style.color = 'black';
+      msg.textContent = 'Creating account...';
 
-      try {
-        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-        const user = userCredential.user;
-
-        await db.collection('users').doc(user.uid).set({
-          name: name,
-          email: email,
-          role: role,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-
-        registerMsg.style.color = 'green';
-        registerMsg.textContent = 'Account created successfully! Redirecting...';
-
+      const res = await appAuth.register({ name, email, password, role });
+      if(res.success){
+        msg.style.color = 'green';
+        msg.textContent = 'Account created successfully! Redirecting...';
         setTimeout(() => {
-          if (role === 'farmer') {
-            window.location.href = 'farmer-dashboard.html';
-          } else {
-            window.location.href = 'buyer-dashboard.html';
-          }
+          if(role === 'farmer') window.location.href = 'farmer-dashboard.html';
+          else window.location.href = 'buyer-dashboard.html';
         }, 1000);
-
-      } catch (error) {
-        registerMsg.style.color = 'red';
-        registerMsg.textContent = error.message;
+      } else {
+        msg.style.color = 'red';
+        msg.textContent = res.message;
       }
     });
   </script>
+
 </body>
 </html>
