@@ -1,18 +1,71 @@
-<!doctype html>
-<html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cart — FamFresh</title><script src="https://cdn.tailwindcss.com"></script></head>
-<body class="bg-green-50 min-h-screen">
-  <div class="max-w-6xl mx-auto px-4 py-8">
-    <h2 class="font-bold text-2xl text-green-800">Your Cart</h2>
-    <div id="cartWrap" class="mt-4 bg-white rounded shadow p-4"></div>
-  </div>
+<script>
+  const CHECKOUT_SERVER_URL = "https://your-server.com/createCheckoutSession"; // placeholder
 
-  <script src="firebase-init.js"></script>
-  <script src="app.js"></script>
-  <script>
-    function renderCart(){ const wrap=document.getElementById('cartWrap'); const items = JSON.parse(localStorage.getItem('cart')||'[]'); if(items.length===0){ wrap.innerHTML = '<div class="text-gray-600">Your cart is empty. <a href="buyer-dashboard.html" class="text-green-700">Shop now</a></div>'; return; } let html='<div class="space-y-3">'; items.forEach((it,idx)=>{ html+=`<div class="flex justify-between items-center border rounded p-3"><div class="flex items-center gap-3"><img src="${it.image||''}" class="w-20 h-20 object-cover rounded"><div><div class="font-semibold">${it.name}</div><div class="text-sm text-gray-600">KES ${it.price} x ${it.quantity}</div></div></div><div class="flex items-center gap-2"><button class="delBtn text-red-600" data-idx="${idx}">Remove</button></div></div>`; }); const total = items.reduce((s,i)=>s+i.price*i.quantity,0); html += `</div><div class="mt-4 text-right"><div class="font-bold">Total: KES ${total}</div><div class="mt-2"><button id="checkoutBtn" class="bg-green-700 text-white px-4 py-2 rounded">Checkout (Demo)</button></div></div>`; wrap.innerHTML = html; document.querySelectorAll('.delBtn').forEach(b=>b.addEventListener('click',()=>{ const idx=Number(b.dataset.idx); const arr=JSON.parse(localStorage.getItem('cart')||'[]'); arr.splice(idx,1); localStorage.setItem('cart', JSON.stringify(arr)); renderCart(); })); document.getElementById('checkoutBtn').addEventListener('click', ()=>{ const items = JSON.parse(localStorage.getItem('cart')||'[]'); if(items.length===0) return alert('Cart empty'); // call checkout server/function
-      fetch(CHECKOUT_SERVER_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ items }) }).then(r=>r.json()).then(d=>{ if(d.sessionUrl) window.location.href = d.sessionUrl; else alert('Checkout failed'); }).catch(e=>{ alert('Checkout server error'); }); }); }
-    renderCart();
-  </script>
-</body>
-</html>
+  function renderCart() {
+    const wrap = document.getElementById('cartWrap');
+    const items = JSON.parse(localStorage.getItem('cart') || '[]');
+    if (items.length === 0) {
+      wrap.innerHTML = '<div class="text-gray-600">Your cart is empty. <a href="buyer-dashboard.html" class="text-green-700">Shop now</a></div>';
+      return;
+    }
+
+    let html = '<div class="space-y-3">';
+    items.forEach((it, idx) => {
+      html += `
+        <div class="flex justify-between items-center border rounded p-3">
+          <div class="flex items-center gap-3">
+            <img src="${it.image||''}" class="w-20 h-20 object-cover rounded">
+            <div>
+              <div class="font-semibold">${it.name}</div>
+              <div class="text-sm text-gray-600">KES ${it.price} x ${it.quantity}</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="delBtn text-red-600" data-idx="${idx}">Remove</button>
+          </div>
+        </div>`;
+    });
+    const total = items.reduce((s, i) => s + i.price * i.quantity, 0);
+    html += `</div>
+      <div class="mt-4 text-right">
+        <div class="font-bold">Total: KES ${total}</div>
+        <div class="mt-2">
+          <button id="checkoutBtn" class="bg-green-700 text-white px-4 py-2 rounded">Checkout (Demo)</button>
+        </div>
+      </div>`;
+
+    wrap.innerHTML = html;
+
+    document.querySelectorAll('.delBtn').forEach(b => {
+      b.addEventListener('click', () => {
+        const idx = Number(b.dataset.idx);
+        const arr = JSON.parse(localStorage.getItem('cart') || '[]');
+        arr.splice(idx, 1);
+        localStorage.setItem('cart', JSON.stringify(arr));
+        renderCart();
+      });
+    });
+
+    document.getElementById('checkoutBtn').addEventListener('click', () => {
+      const items = JSON.parse(localStorage.getItem('cart') || '[]');
+      if (items.length === 0) return alert('Cart empty');
+
+      // Demo checkout
+      alert(`Demo checkout: ${items.length} items, total KES ${total}`);
+
+      // Real checkout (if server URL configured)
+      /*
+      fetch(CHECKOUT_SERVER_URL, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ items })
+      })
+      .then(r => r.json())
+      .then(d => { if(d.sessionUrl) window.location.href = d.sessionUrl; else alert('Checkout failed'); })
+      .catch(e => { alert('Checkout server error'); });
+      */
+    });
+  }
+
+  renderCart();
+</script>
