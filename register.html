@@ -6,61 +6,40 @@
   <title>Register — FamFresh</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-green-50 min-h-screen flex items-center justify-center">
+<body class="bg-gray-50 min-h-screen flex items-center justify-center">
 
-  <div class="max-w-md w-full bg-white p-6 rounded-xl shadow">
-    <h2 class="font-bold text-2xl text-green-800">Create an account</h2>
-    <form id="registerForm" class="mt-4 space-y-3">
-      <input id="name" required placeholder="Full name" class="w-full border px-3 py-2 rounded"/>
-      <input id="email" type="email" required placeholder="Email" class="w-full border px-3 py-2 rounded"/>
-      <input id="password" type="password" required placeholder="Password" class="w-full border px-3 py-2 rounded"/>
-      <select id="role" class="w-full border px-3 py-2 rounded">
+  <div class="bg-white p-8 rounded shadow w-full max-w-md">
+    <h1 class="text-2xl font-bold mb-6 text-center">Register</h1>
+    <form id="registerForm" class="space-y-4">
+      <input type="text" id="name" placeholder="Full Name" required class="w-full border p-2 rounded">
+      <input type="email" id="email" placeholder="Email" required class="w-full border p-2 rounded">
+      <input type="password" id="password" placeholder="Password" required class="w-full border p-2 rounded">
+      <select id="role" class="w-full border p-2 rounded">
         <option value="buyer">Buyer</option>
         <option value="farmer">Farmer</option>
       </select>
       <button class="w-full bg-green-700 text-white py-2 rounded">Register</button>
-      <p id="registerMsg" class="text-sm text-red-600 mt-2"></p>
     </form>
-    <p class="text-sm mt-2">Already have an account? <a href="login.html" class="text-green-600">Login</a></p>
+    <p class="mt-4 text-sm text-gray-600 text-center">Already have an account? <a href="login.html" class="text-green-700 underline">Login</a></p>
   </div>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-  <!-- Initialize Firebase and Auth -->
   <script src="firebase-init.js"></script>
-  <script src="auth.js"></script>
-
+  <script src="app.js"></script>
   <script>
-    // Registration logic using appAuth
-    document.getElementById('registerForm').addEventListener('submit', async e => {
+    document.getElementById('registerForm').addEventListener('submit', async e=>{
       e.preventDefault();
-
-      const name = document.getElementById('name').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const role = document.getElementById('role').value;
-      const msg = document.getElementById('registerMsg');
-
-      msg.style.color = 'black';
-      msg.textContent = 'Creating account...';
-
-      const res = await appAuth.register({ name, email, password, role });
+      const name=document.getElementById('name').value;
+      const email=document.getElementById('email').value;
+      const password=document.getElementById('password').value;
+      const role=document.getElementById('role').value;
+      const res = await appAuth.register({name,email,password,role});
       if(res.success){
-        msg.style.color = 'green';
-        msg.textContent = 'Account created successfully! Redirecting...';
-        setTimeout(() => {
-          if(role === 'farmer') window.location.href = 'farmer-dashboard.html';
-          else window.location.href = 'buyer-dashboard.html';
-        }, 1000);
+        if(role==='farmer') location.href='farmer-dashboard.html';
+        else location.href='buyer-dashboard.html';
       } else {
-        msg.style.color = 'red';
-        msg.textContent = res.message;
+        alert(res.message);
       }
     });
   </script>
-
 </body>
 </html>
