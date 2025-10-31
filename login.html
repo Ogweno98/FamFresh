@@ -6,56 +6,36 @@
   <title>Login — FamFresh</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-green-50 min-h-screen flex items-center justify-center">
+<body class="bg-gray-50 min-h-screen flex items-center justify-center">
 
-  <div class="max-w-md w-full bg-white p-6 rounded-xl shadow">
-    <h2 class="font-bold text-2xl text-green-800">Login</h2>
-    <form id="loginForm" class="mt-4 space-y-3">
-      <input id="email" type="email" required placeholder="Email" class="w-full border px-3 py-2 rounded"/>
-      <input id="password" type="password" required placeholder="Password" class="w-full border px-3 py-2 rounded"/>
-      <div class="flex items-center justify-between">
-        <label class="text-sm">
-          <input id="remember" type="checkbox" class="mr-2"> Remember me
-        </label>
-        <a href="register.html" class="text-sm text-green-600">Create account</a>
-      </div>
+  <div class="bg-white p-8 rounded shadow w-full max-w-md">
+    <h1 class="text-2xl font-bold mb-6 text-center">FamFresh Login</h1>
+    <form id="loginForm" class="space-y-4">
+      <input type="email" id="email" placeholder="Email" required class="w-full border p-2 rounded">
+      <input type="password" id="password" placeholder="Password" required class="w-full border p-2 rounded">
       <button class="w-full bg-green-700 text-white py-2 rounded">Login</button>
-      <p id="loginMsg" class="text-sm text-red-600 mt-2"></p>
     </form>
+    <p class="mt-4 text-sm text-gray-600 text-center">Don't have an account? <a href="register.html" class="text-green-700 underline">Register</a></p>
   </div>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-  <!-- Initialize Firebase and Auth -->
   <script src="firebase-init.js"></script>
-  <script src="auth.js"></script>
-
+  <script src="app.js"></script>
   <script>
-    // Login logic using appAuth
-    document.getElementById('loginForm').addEventListener('submit', async e => {
+    document.getElementById('loginForm').addEventListener('submit', async e=>{
       e.preventDefault();
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
-      const msg = document.getElementById('loginMsg');
-
-      msg.style.color = 'black';
-      msg.textContent = 'Logging in...';
-
-      const res = await appAuth.login(email, password);
+      const email=document.getElementById('email').value;
+      const password=document.getElementById('password').value;
+      const res = await appAuth.login(email,password);
       if(res.success){
-        msg.textContent = '';
-        if(res.role === 'farmer') window.location.href = 'farmer-dashboard.html';
-        else if(res.role === 'admin') window.location.href = 'admin-dashboard.html';
-        else window.location.href = 'buyer-dashboard.html';
+        const doc = await firebase.firestore().collection('users').doc(firebase.auth().currentUser.uid).get();
+        const role = doc.exists?doc.data().role:'buyer';
+        if(role==='farmer') location.href='farmer-dashboard.html';
+        else if(role==='admin') location.href='admin-dashboard.html';
+        else location.href='buyer-dashboard.html';
       } else {
-        msg.style.color = 'red';
-        msg.textContent = res.message;
+        alert(res.message);
       }
     });
   </script>
-
 </body>
 </html>
