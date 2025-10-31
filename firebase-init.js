@@ -1,5 +1,4 @@
 // firebase-init.js
-// Your Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyCswU-LrTo6nOe_JkmepizOHwWyZxbteCc",
   authDomain: "famfresh-ea11f.firebaseapp.com",
@@ -10,10 +9,10 @@ const firebaseConfig = {
   measurementId: "G-TW5GD58FYC"
 };
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+if(!firebase.apps.length){
+  firebase.initializeApp(firebaseConfig);
+}
 
-// Firebase services
 const auth = firebase.auth();
 const db = firebase.firestore();
 const storage = firebase.storage();
