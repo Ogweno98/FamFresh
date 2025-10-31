@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Farmer Dashboard — FamFresh</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css">
 </head>
-<body class="min-h-screen bg-white">
+<body class="min-h-screen bg-gray-50">
 
-  <div class="bg-white shadow sticky top-0">
+  <div class="bg-white shadow sticky top-0 z-40">
     <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
       <div class="flex items-center gap-3">
         <div class="rounded-full bg-green-600 w-10 h-10 flex items-center justify-center text-white font-bold">FF</div>
@@ -59,36 +60,21 @@
 
   <div id="chatbot-root"></div>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
-
   <script src="firebase-init.js"></script>
   <script src="app.js"></script>
   <script src="chatbot.js"></script>
 
   <script>
     // Auth guard
-    appAuth.onAuthStateChanged(async user => {
-      if(!user) return location.href='login.html';
-      // show farmer name
-      try{
-        const doc = await firebase.firestore().collection('users').doc(user.uid).get();
-        if(doc.exists) document.getElementById('buyerName')?.textContent = doc.data().name || doc.data().email;
-      }catch(e){}
-    });
+    appAuth.onAuthStateChanged(user => { if(!user) location.href='login.html'; });
 
     // Render farmer's products
-    async function renderMyProducts() {
-      const ct = document.getElementById('myProducts'); 
-      ct.innerHTML = '';
+    async function renderMyProducts(){
+      const ct=document.getElementById('myProducts'); ct.innerHTML='';
       const prods = await appData.getProducts();
-      const userEmail = firebase.auth().currentUser?.email;
-      prods.filter(p => p.owner === userEmail).forEach(p => {
-        const el = document.createElement('div');
-        el.className='p-3 border rounded';
+      const email = firebase.auth().currentUser.email;
+      prods.filter(p=>p.owner===email).forEach(p=>{
+        const el=document.createElement('div'); el.className='p-3 border rounded';
         el.innerHTML=`
           <img src="${p.image||''}" class="h-28 w-full object-cover rounded">
           <h4 class="mt-2 font-semibold">${p.name}</h4>
@@ -99,13 +85,10 @@
           </div>`;
         ct.appendChild(el);
 
-        el.querySelector('.delBtn').addEventListener('click', async ()=>{
-          await appData.removeProduct?.(p.id);
-          renderMyProducts();
-        });
+        el.querySelector('.delBtn').addEventListener('click', async ()=>{ await appData.removeProduct(p.id); renderMyProducts(); });
         el.querySelector('.editBtn').addEventListener('click', async ()=>{
-          const newPrice = prompt('New price (KES)', p.price);
-          if(newPrice) { await appData.updateProduct?.(p.id, { price: Number(newPrice) }); renderMyProducts(); }
+          const newPrice = prompt('New price (KES)',p.price);
+          if(newPrice) { await appData.updateProduct(p.id,{price:Number(newPrice)}); renderMyProducts(); }
         });
       });
     }
@@ -121,12 +104,10 @@
       let img='';
       if(file){
         img = await new Promise(res=>{
-          const r=new FileReader();
-          r.onload=()=>res(r.result);
-          r.readAsDataURL(file);
+          const r=new FileReader(); r.onload=()=>res(r.result); r.readAsDataURL(file);
         });
       }
-      await appData.addProduct({ name, price, unit, category: cat, description: desc, imageDataUrl: img, ownerEmail: firebase.auth().currentUser.email });
+      await appData.addProduct({name,price,unit,category:cat,description:desc,imageDataUrl:img,ownerEmail:firebase.auth().currentUser.email});
       document.getElementById('productForm').reset();
       renderMyProducts();
       alert('Product added');
@@ -135,10 +116,8 @@
     renderMyProducts();
 
     // Logout
-    document.getElementById('logoutBtn').addEventListener('click', ()=>{
-      appAuth.logout();
-      location.href='login.html';
-    });
+    document.getElementById('logoutBtn').addEventListener('click', ()=>{ appAuth.logout(); location.href='login.html'; });
   </script>
 </body>
 </html>
+         
